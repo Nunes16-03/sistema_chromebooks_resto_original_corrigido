@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Painel Principal - Sistema Chromebooks{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+  <h2 class="fw-bold text-primary">Painel de Controle</h2>
+  <p class="text-muted">Gerencie empréstimos, devoluções e cadastros de Chromebooks.</p>
+</div>
+
+<!-- === Estatísticas === -->
+<div class="row g-4 text-center mb-4">
+  <div class="col-md-4">
+    <div class="card text-white bg-success shadow-sm h-100">
+      <div class="card-body">
+        <div class="icon bg-success mx-auto mb-3">
+          <i class="bi bi-check-circle"></i>
+        </div>
+        <h5 class="card-title">Disponíveis</h5>
+        <p class="display-5 fw-bold mb-0">{{ stats.disponiveis }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card text-white bg-warning shadow-sm h-100">
+      <div class="card-body">
+        <div class="icon bg-warning mx-auto mb-3">
+          <i class="bi bi-arrow-left-right text-dark"></i>
+        </div>
+        <h5 class="card-title text-dark">Emprestados</h5>
+        <p class="display-5 fw-bold mb-0">{{ stats.emprestados }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card text-white bg-primary shadow-sm h-100">
+      <div class="card-body">
+        <div class="icon bg-primary mx-auto mb-3">
+          <i class="bi bi-laptop"></i>
+        </div>
+        <h5 class="card-title">Total de Chromebooks</h5>
+        <p class="display-5 fw-bold mb-0">{{ stats.total }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === Ações principais === -->
+<div class="row g-3 mt-4">
+  <div class="col-md-6">
+    <a href="{{ url_for('emprestimo') }}" class="btn btn-primary w-100 py-3 d-flex justify-content-center align-items-center gap-2 shadow-sm">
+      <i class="bi bi-box-arrow-in-right fs-4"></i>
+      <span>Registrar Empréstimo</span>
+    </a>
+  </div>
+  <div class="col-md-6">
+    <a href="{{ url_for('devolucao') }}" class="btn btn-success w-100 py-3 d-flex justify-content-center align-items-center gap-2 shadow-sm">
+      <i class="bi bi-box-arrow-left fs-4"></i>
+      <span>Registrar Devolução</span>
+    </a>
+  </div>
+</div>
+
+<!-- === Opções administrativas === -->
+{% if current_user.is_admin %}
+<hr class="my-5">
+<h4 class="text-center text-primary mb-3"><i class="bi bi-gear-fill"></i> Administração</h4>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <a href="{{ url_for('cadastro_chromebook') }}" class="btn btn-warning w-100 py-3 d-flex justify-content-center align-items-center gap-2 shadow-sm">
+      <i class="bi bi-laptop-fill fs-5"></i>
+      <span>Gerenciar Chromebooks</span>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('cadastro_professor') }}" class="btn btn-info text-white w-100 py-3 d-flex justify-content-center align-items-center gap-2 shadow-sm">
+      <i class="bi bi-person-plus fs-5"></i>
+      <span>Cadastrar Professor</span>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('admin_banco_dados') }}" class="btn btn-danger w-100 py-3 d-flex justify-content-center align-items-center gap-2 shadow-sm">
+      <i class="bi bi-database fs-5"></i>
+      <span>Ver Banco de Dados</span>
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

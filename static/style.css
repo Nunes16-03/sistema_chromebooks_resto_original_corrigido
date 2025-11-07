@@ -1,0 +1,202 @@
+/* =============================
+   Estilos personalizados
+   Sistema de Empréstimo de Chromebooks
+============================= */
+
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* === Cards e Containers === */
+.card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* === Botões === */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.25s ease-in-out;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border: none;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  border: none;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  border: none;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  border: none;
+}
+
+/* === Navbar === */
+.navbar-brand {
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+/* === Tabelas === */
+.table th {
+  border-top: none;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* === Badges === */
+.badge {
+  font-size: 0.8em;
+  padding: 0.45em 0.8em;
+}
+
+.badge.bg-success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+}
+
+.badge.bg-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%) !important;
+}
+
+.badge.bg-warning {
+  color: #000;
+}
+
+/* === Animações === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Estados de foco === */
+.form-control:focus,
+.form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* === Cards de estatísticas === */
+.card.text-white .card-body {
+  padding: 1.5rem;
+}
+
+.card.text-white .display-4 {
+  opacity: 0.9;
+}
+
+/* === Spinner (carregando...) === */
+.spinner-border {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* === Feedback === */
+.form-text .text-success,
+.form-text .text-danger {
+  font-weight: 500;
+}
+
+/* === Ícones redondos (corrigido) === */
+.icon {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+  margin-bottom: 10px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.icon i {
+  font-size: 22px;
+  position: relative;
+  top: 1px;
+}
+
+.icon.bg-primary {
+  background-color: var(--bs-primary, #0d6efd);
+}
+
+.icon.bg-success {
+  background-color: #28a745;
+}
+
+.icon.bg-warning {
+  background-color: #ffc107;
+  color: #000;
+}
+
+/* === Responsividade === */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .btn {
+    margin-bottom: 10px;
+  }
+
+  .display-4 {
+    font-size: 2rem;
+  }
+
+  .icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .icon i {
+    font-size: 18px;
+  }
+}
+
+/* === Cards de empréstimos/devoluções === */
+#lista-emprestados .card {
+  border-left: 4px solid #0d6efd;
+}
+
+#lista-emprestados h6 {
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+#lista-emprestados small {
+  color: #6c757d;
+}
+
+/* === Corrige seta fora do quadrado === */
+button.btn i,
+a.btn i {
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+/* Ajuste para alinhamento de ícones bootstrap */
+.bi { vertical-align: -.125em; }

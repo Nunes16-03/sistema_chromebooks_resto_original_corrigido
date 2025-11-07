@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Remover Chromebook - Sistema Chromebooks{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-trash"></i> Remover Chromebook do Sistema
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita! 
+                    Apenas chromebooks disponíveis podem ser removidos.
+                </div>
+
+                <form method="POST" id="removerForm" onsubmit="return confirm('Tem certeza que deseja remover este chromebook? Esta ação não pode ser desfeita!');">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="numero" class="form-label">Número do Chromebook</label>
+                            <input type="number" class="form-control" id="numero" 
+                                   name="numero" required min="1" 
+                                   placeholder="Ex: 1, 2, 3...">
+                            <div id="numeroFeedback" class="form-text"></div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="carrinho" class="form-label">Carrinho</label>
+                            <select class="form-select" id="carrinho" name="carrinho" required>
+                                <option value="">Selecione o carrinho...</option>
+                                <option value="Par">Carrinho PAR</option>
+                                <option value="Ímpar">Carrinho ÍMPAR</option>
+                            </select>
+                            <div id="carrinhoFeedback" class="form-text"></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger btn-lg w-100" id="submitBtn">
+                        <i class="bi bi-trash"></i> Remover Chromebook
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6>📋 Regras de Remoção:</h6>
+                <div class="small">
+                    <ul>
+                        <li>✅ Apenas chromebooks <strong>disponíveis</strong> podem ser removidos</li>
+                        <li>❌ Chromebooks <strong>emprestados</strong> não podem ser removidos</li>
+                        <li>🟦 Carrinho PAR: Apenas números <strong>pares</strong></li>
+                        <li>🟪 Carrinho ÍMPAR: Apenas números <strong>ímpares</strong></li>
+                        <li>📝 A remoção fica registrada no <strong>histórico</strong></li>
+                        <li>🔄 Para readicionar, use o <strong>cadastro de chromebooks</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-list-check"></i> Chromebooks Cadastrados
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if chromebooks %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Carrinho</th>
+                                <th>Status</th>
+                                <th>Pode Remover?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cb in chromebooks %}
+                            <tr>
+                                <td><strong>#{{ cb[0] }}</strong></td>
+                                <td>
+                                    <span class="badge bg-{{ 'primary' if cb[1] == 'Par' else 'secondary' }}">
+                                        {{ cb[1] }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if cb[2] == 'Disponível' else 'warning' }}">
+                                        {{ cb[2] }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if cb[2] == 'Disponível' %}
+                                        <span class="badge bg-success">✅ Sim</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">❌ Não (Emprestado)</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center text-muted small">
+                    Total: {{ chromebooks|length }} chromebooks cadastrados
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-laptop display-1 text-muted"></i>
+                    <h5 class="text-muted mt-3">Nenhum chromebook cadastrado</h5>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Validação em tempo real do número e carrinho
+document.addEventListener('DOMContentLoaded', function() {
+    const numeroInput = document.getElementById('numero');
+    const carrinhoSelect = document.getElementById('carrinho');
+    const numeroFeedback = document.getElementById('numeroFeedback');
+    const carrinhoFeedback = document.getElementById('carrinhoFeedback');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function validarNumeroCarrinho() {
+        const numero = parseInt(numeroInput.value);
+        const carrinho = carrinhoSelect.value;
+        
+        if (numero && carrinho) {
+            if (carrinho === 'Par' && numero % 2 !== 0) {
+                numeroFeedback.innerHTML = '<span class="text-danger">❌ Número deve ser PAR para carrinho PAR</span>';
+                carrinhoFeedback.innerHTML = '<span class="text-danger">❌ Carrinho incorreto para este número</span>';
+                submitBtn.disabled = true;
+                return false;
+            } else if (carrinho === 'Ímpar' && numero % 2 === 0) {
+                numeroFeedback.innerHTML = '<span class="text-danger">❌ Número deve ser ÍMPAR para carrinho ÍMPAR</span>';
+                carrinhoFeedback.innerHTML = '<span class="text-danger">❌ Carrinho incorreto para este número</span>';
+                submitBtn.disabled = true;
+                return false;
+            } else {
+                numeroFeedback.innerHTML = '<span class="text-success">✅ Número correto para este carrinho</span>';
+                carrinhoFeedback.innerHTML = '<span class="text-success">✅ Carrinho correto</span>';
+                submitBtn.disabled = false;
+                return true;
+            }
+        } else {
+            numeroFeedback.innerHTML = '';
+            carrinhoFeedback.innerHTML = '';
+            submitBtn.disabled = false;
+            return true;
+        }
+    }
+
+    numeroInput.addEventListener('input', validarNumeroCarrinho);
+    carrinhoSelect.addEventListener('change', validarNumeroCarrinho);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Banco de Dados{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+        <h1><i class="bi bi-database"></i> Visualização do Banco de Dados</h1>
+        <p class="text-muted">Acesso administrativo - Apenas para administradores</p>
+        
+        <!-- Tabela USUÁRIOS -->
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Tabela USUÁRIOS</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Senha</th>
+                                <th>Nome</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in usuarios %}
+                            <tr>
+                                <td>{{ user[0] }}</td>
+                                <td><strong>{{ user[1] }}</strong></td>
+                                <td><code>{{ user[2] }}</code></td>
+                                <td>{{ user[3] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-muted small">Total: {{ usuarios|length }} usuários</div>
+            </div>
+        </div>
+
+        <!-- Tabela CHROMEBOOKS -->
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-laptop"></i> Tabela CHROMEBOOKS</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Número</th>
+                                <th>Carrinho</th>
+                                <th>Status</th>
+                                <th>Aluno</th>
+                                <th>Professor</th>
+                                <th>Data Emp.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cb in chromebooks %}
+                            <tr>
+                                <td>{{ cb[0] }}</td>
+                                <td><strong>#{{ cb[1] }}</strong></td>
+                                <td>
+                                    <span class="badge bg-{{ 'primary' if cb[2] == 'Par' else 'secondary' }}">
+                                        {{ cb[2] }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if cb[3] == 'Disponível' else 'warning' }}">
+                                        {{ cb[3] }}
+                                    </span>
+                                </td>
+                                <td>{{ cb[4] or '-' }}</td>
+                                <td>{{ cb[6] or '-' }}</td>
+                                <td>{{ cb[5] or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-muted small">Total: {{ chromebooks|length }} chromebooks</div>
+            </div>
+        </div>
+
+        <!-- Tabela HISTÓRICO -->
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Histórico (Últimos 20 registros)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Chromebook</th>
+                                <th>Carrinho</th>
+                                <th>Aluno</th>
+                                <th>Professor</th>
+                                <th>Tipo</th>
+                                <th>Data/Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hist in historico %}
+                            <tr>
+                                <td>{{ hist[0] }}</td>
+                                <td><strong>#{{ hist[1] }}</strong></td>
+                                <td>
+                                    <span class="badge bg-{{ 'primary' if hist[2] == 'Par' else 'secondary' }}">
+                                        {{ hist[2] }}
+                                    </span>
+                                </td>
+                                <td>{{ hist[3] or '-' }}</td>
+                                <td>{{ hist[4] or '-' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'warning' if hist[8] == 'Empréstimo' else 'success' }}">
+                                        {{ hist[8] }}
+                                    </span>
+                                </td>
+                                <td><small>{{ hist[5] or hist[6] }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar ao Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

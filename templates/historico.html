@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Histórico - Sistema Chromebooks{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-clock-history text-info"></i> Histórico de Movimentações
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Chromebook</th>
+                                <th>Carrinho</th>
+                                <th>Aluno</th>
+                                <th>Professor</th>
+                                <th>Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in historico %}
+                            <tr>
+                                <td>
+                                    {% if item[5] %}
+                                        {{ item[5] }} <small class="text-muted">(emp)</small>
+                                    {% else %}
+                                        {{ item[6] }} <small class="text-muted">(dev)</small>
+                                    {% endif %}
+                                </td>
+                                <td><strong>#{{ item[1] }}</strong></td>
+                                <td>
+                                    <span class="badge bg-{{ 'primary' if item[2] == 'Par' else 'secondary' }}">
+                                        {{ item[2] }}
+                                    </span>
+                                </td>
+                                <td>{{ item[3] or '-' }}</td>
+                                <td>{{ item[4] or '-' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'warning' if item[8] == 'Empréstimo' else 'success' }}">
+                                        {{ item[8] }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if not historico %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <h5 class="text-muted mt-3">Nenhum registro no histórico</h5>
+                    <p class="text-muted">As movimentações aparecerão aqui automaticamente.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Empréstimo - Sistema Chromebooks{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-arrow-up-circle text-primary"></i> Registrar Empréstimo
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="emprestimoForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="numero_chromebook" class="form-label">Número do Chromebook</label>
+                            <input type="number" class="form-control" id="numero_chromebook" 
+                                   name="numero_chromebook" required min="1" 
+                                   placeholder="Ex: 1, 2, 3...">
+                            <div class="form-text">Digite o número escrito no Chromebook</div>
+                            <div id="numeroFeedback" class="form-text"></div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="carrinho" class="form-label">Carrinho</label>
+                            <select class="form-select" id="carrinho" name="carrinho" required>
+                                <option value="">Selecione o carrinho...</option>
+                                <option value="Par">Carrinho PAR</option>
+                                <option value="Ímpar">Carrinho ÍMPAR</option>
+                            </select>
+                            <div class="form-text">Escolha em qual carrinho o Chromebook está</div>
+                            <div id="carrinhoFeedback" class="form-text"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="nome_aluno" class="form-label">Nome do Aluno</label>
+                        <input type="text" class="form-control" id="nome_aluno" 
+                               name="nome_aluno" required 
+                               placeholder="Digite o nome completo do aluno">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                        <i class="bi bi-check-circle"></i> Registrar Empréstimo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i> Chromebooks Disponíveis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="disponiveis-list">
+                    <div class="text-center text-muted">
+                        <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <div>Carregando chromebooks disponíveis...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6>📋 Regras do Sistema:</h6>
+                <div class="small">
+                    <strong>Carrinho PAR:</strong> Apenas números PARES (2, 4, 6, 8...)<br>
+                    <strong>Carrinho ÍMPAR:</strong> Apenas números ÍMPARES (1, 3, 5, 7...)<br><br>
+                    <strong>✅ Pode emprestar:</strong> Apenas chromebooks DISPONÍVEIS<br>
+                    <strong>❌ Não pode emprestar:</strong> Chromebooks já EMPRESTADOS
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT COMPLETO COM TODAS AS FUNÇÕES -->
+<script>
+// 🎯 FUNÇÃO: Carregar chromebooks disponíveis
+function carregarChromebooksDisponiveis() {
+    console.log("🔄 Carregando chromebooks...");
+    
+    fetch('/api/chromebooks_disponiveis')
+        .then(response => {
+            if (!response.ok) throw new Error('Erro na API');
+            return response.json();
+        })
+        .then(dados => {
+            console.log("✅ Dados recebidos:", dados);
+            mostrarChromebooksNaTela(dados);
+        })
+        .catch(erro => {
+            console.error("❌ Erro:", erro);
+            document.getElementById('disponiveis-list').innerHTML = 
+                '<div class="alert alert-danger">Erro ao carregar chromebooks</div>';
+        });
+}
+
+// 🎯 FUNÇÃO: Mostrar chromebooks na tela
+function mostrarChromebooksNaTela(dados) {
+    const container = document.getElementById('disponiveis-list');
+    
+    if (!dados || dados.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-3">
+                <i class="bi bi-inbox display-6"></i>
+                <p class="mt-2 mb-0">Nenhum chromebook disponível</p>
+                <small>Cadastre chromebooks primeiro</small>
+            </div>
+        `;
+        return;
+    }
+
+    // Separar por carrinho
+    const par = dados.filter(cb => 
+        cb.carrinho === 'Par' || cb.carrinho.includes('Par')
+    ).map(cb => cb.numero);
+
+    const impar = dados.filter(cb => 
+        cb.carrinho.includes('mpar')
+    ).map(cb => cb.numero);
+
+    let html = '';
+
+    // Carrinho PAR
+    if (par.length > 0) {
+        html += `
+            <div class="mb-4">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="bg-primary rounded-circle me-2" style="width: 12px; height: 12px;"></div>
+                    <strong>Carrinho PAR</strong>
+                    <span class="badge bg-primary ms-2">${par.length} disponíveis</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+        `;
+        par.sort((a, b) => a - b).forEach(numero => {
+            html += `<span class="badge bg-primary text-white fs-6 py-2 px-3">${numero}</span>`;
+        });
+        html += `</div></div>`;
+    }
+
+    // Carrinho ÍMPAR
+    if (impar.length > 0) {
+        html += `
+            <div class="mb-4">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="bg-secondary rounded-circle me-2" style="width: 12px; height: 12px;"></div>
+                    <strong>Carrinho ÍMPAR</strong>
+                    <span class="badge bg-secondary ms-2">${impar.length} disponíveis</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+        `;
+        impar.sort((a, b) => a - b).forEach(numero => {
+            html += `<span class="badge bg-secondary text-white fs-6 py-2 px-3">${numero}</span>`;
+        });
+        html += `</div></div>`;
+    }
+
+    // Resumo
+    html += `
+        <div class="border-top pt-3 mt-3">
+            <div class="row text-center">
+                <div class="col-6">
+                    <div class="text-primary">
+                        <div class="fs-4 fw-bold">${par.length}</div>
+                        <small>PAR</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="text-secondary">
+                        <div class="fs-4 fw-bold">${impar.length}</div>
+                        <small>ÍMPAR</small>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-2">
+                <small class="text-muted">Total: <strong>${dados.length}</strong> chromebooks disponíveis</small>
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+// 🎯 FUNÇÃO: Validação em tempo real (PAR/ÍMPAR)
+function validarNumeroCarrinho() {
+    const numeroInput = document.getElementById('numero_chromebook');
+    const carrinhoSelect = document.getElementById('carrinho');
+    const numeroFeedback = document.getElementById('numeroFeedback');
+    const carrinhoFeedback = document.getElementById('carrinhoFeedback');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const numero = parseInt(numeroInput.value);
+    const carrinho = carrinhoSelect.value;
+    
+    if (numero && carrinho) {
+        if (carrinho === 'Par' && numero % 2 !== 0) {
+            numeroFeedback.innerHTML = '<span class="text-danger">❌ Número deve ser PAR para carrinho PAR</span>';
+            carrinhoFeedback.innerHTML = '<span class="text-danger">❌ Carrinho incorreto para este número</span>';
+            submitBtn.disabled = true;
+            return false;
+        } else if (carrinho === 'Ímpar' && numero % 2 === 0) {
+            numeroFeedback.innerHTML = '<span class="text-danger">❌ Número deve ser ÍMPAR para carrinho ÍMPAR</span>';
+            carrinhoFeedback.innerHTML = '<span class="text-danger">❌ Carrinho incorreto para este número</span>';
+            submitBtn.disabled = true;
+            return false;
+        } else {
+            numeroFeedback.innerHTML = '<span class="text-success">✅ Número correto para este carrinho</span>';
+            carrinhoFeedback.innerHTML = '<span class="text-success">✅ Carrinho correto</span>';
+            submitBtn.disabled = false;
+            return true;
+        }
+    } else {
+        numeroFeedback.innerHTML = '';
+        carrinhoFeedback.innerHTML = '';
+        submitBtn.disabled = false;
+        return true;
+    }
+}
+
+// 🎯 INICIALIZAÇÃO: Quando a página carrega
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🚀 Página carregada - Iniciando todas as funções...");
+    
+    // Carregar chromebooks disponíveis
+    carregarChromebooksDisponiveis();
+    
+    // Configurar validação em tempo real
+    const numeroInput = document.getElementById('numero_chromebook');
+    const carrinhoSelect = document.getElementById('carrinho');
+    
+    if (numeroInput && carrinhoSelect) {
+        numeroInput.addEventListener('input', validarNumeroCarrinho);
+        carrinhoSelect.addEventListener('change', validarNumeroCarrinho);
+        console.log("✅ Validação em tempo real configurada");
+    }
+    
+    // Configurar loading no formulário
+    const form = document.getElementById('emprestimoForm');
+    if (form) {
+        form.addEventListener('submit', function() {
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processando...';
+            btn.disabled = true;
+        });
+    }
+    
+    console.log("🎉 Todas as funções iniciadas com sucesso!");
+});
+
+// 🔄 Recarregar a cada 30 segundos
+setInterval(carregarChromebooksDisponiveis, 30000);
+</script>
+
+<style>
+.badge {
+    font-weight: 500;
+    min-width: 45px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+</style>
+{% endblock %}
