@@ -17,9 +17,6 @@ function confirmarAcao(mensagem) {
 document.addEventListener("DOMContentLoaded", function () {
   const forms = document.querySelectorAll("form:not(#login-form)");
 
-
-
-
   forms.forEach((form) => {
     form.addEventListener("submit", function (e) {
       const requiredFields = form.querySelectorAll("[required]");
@@ -99,7 +96,7 @@ async function carregarEmprestados() {
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h6 class="mb-1">💻 Chromebook <b>${cb.numero}</b> — <span class="text-secondary">${cb.carrinho}</span></h6>
-              <small class="text-muted">👤 <b>${cb.aluno}</b></small>
+              <small class="text-muted">👤 <b>${cb.aluno}</b> - Turma: ${cb.turma || 'N/A'}</small>
             </div>
             <form method="POST" action="/devolucao" onsubmit="return confirmarAcao('Confirmar devolução de ${cb.numero}?')">
               <input type="hidden" name="numero_chromebook" value="${cb.numero}">

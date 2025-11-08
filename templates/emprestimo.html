@@ -35,11 +35,21 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="nome_aluno" class="form-label">Nome do Aluno</label>
-                        <input type="text" class="form-control" id="nome_aluno" 
-                               name="nome_aluno" required 
-                               placeholder="Digite o nome completo do aluno">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nome_aluno" class="form-label">Nome do Aluno</label>
+                            <input type="text" class="form-control" id="nome_aluno" 
+                                   name="nome_aluno" required 
+                                   placeholder="Digite o nome completo do aluno">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="turma" class="form-label">Turma do Aluno</label>
+                            <input type="text" class="form-control" id="turma" 
+                                   name="turma" required 
+                                   placeholder="Ex: 8ºA, 9ºB, etc.">
+                            <div class="form-text">Turma do aluno para controle</div>
+                        </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">

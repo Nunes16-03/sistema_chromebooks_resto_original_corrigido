@@ -20,6 +20,7 @@
                                 <th>Chromebook</th>
                                 <th>Carrinho</th>
                                 <th>Aluno</th>
+                                <th>Turma</th>
                                 <th>Professor</th>
                                 <th>Tipo</th>
                             </tr>
@@ -28,10 +29,10 @@
                             {% for item in historico %}
                             <tr>
                                 <td>
-                                    {% if item[5] %}
-                                        {{ item[5] }} <small class="text-muted">(emp)</small>
+                                    {% if item[6] %}
+                                        {{ item[6] }} <small class="text-muted">(emp)</small>
                                     {% else %}
-                                        {{ item[6] }} <small class="text-muted">(dev)</small>
+                                        {{ item[7] }} <small class="text-muted">(dev)</small>
                                     {% endif %}
                                 </td>
                                 <td><strong>#{{ item[1] }}</strong></td>
@@ -42,6 +43,7 @@
                                 </td>
                                 <td>{{ item[3] or '-' }}</td>
                                 <td>{{ item[4] or '-' }}</td>
+                                <td>{{ item[5] or '-' }}</td>
                                 <td>
                                     <span class="badge bg-{{ 'warning' if item[8] == 'Empréstimo' else 'success' }}">
                                         {{ item[8] }}

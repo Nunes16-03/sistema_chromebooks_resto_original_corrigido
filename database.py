@@ -13,6 +13,8 @@ class Database:
     def criar_tabelas(self):
         conn = self.get_connection()
         cursor = conn.cursor()
+        
+        # Tabela de usuários
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS usuarios (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,6 +23,8 @@ class Database:
                 nome TEXT NOT NULL
             )
         ''')
+        
+        # Tabela de chromebooks - ATUALIZADA com turma_aluno
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS chromebooks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,24 +32,32 @@ class Database:
                 carrinho TEXT NOT NULL,
                 status TEXT DEFAULT 'Disponível',
                 aluno_emprestado TEXT,
+                turma_aluno TEXT,
                 data_emprestimo TEXT,
                 professor_emprestimo TEXT
             )
         ''')
+        
+        # Tabela de histórico - ATUALIZADA com turma
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS historico (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 chromebook_numero INTEGER,
                 carrinho TEXT,
                 aluno TEXT,
+                turma TEXT,
                 professor TEXT,
                 data_emprestimo TEXT,
                 data_devolucao TEXT,
                 tipo_acao TEXT
             )
         ''')
+        
         conn.commit()
         conn.close()
+        
+        # Criar usuário padrão se não existir
+        self.criar_usuario_padrao()
 
     def criar_usuario_padrao(self):
         conn = self.get_connection()
@@ -142,7 +154,7 @@ class Database:
             return False, str(ex)
 
     # resto das funções
-    def registrar_emprestimo(self, numero_chromebook, carrinho, nome_aluno, professor):
+    def registrar_emprestimo(self, numero_chromebook, carrinho, nome_aluno, turma, professor):
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
@@ -150,23 +162,23 @@ class Database:
             chromebook = cursor.fetchone()
             if not chromebook:
                 cursor.execute(
-                    "INSERT INTO chromebooks (numero, carrinho, status, aluno_emprestado, data_emprestimo, professor_emprestimo) VALUES (?, ?, ?, ?, ?, ?)",
-                    (numero_chromebook, carrinho, 'Emprestado', nome_aluno, datetime.now().strftime("%d/%m/%Y %H:%M"), professor)
+                    "INSERT INTO chromebooks (numero, carrinho, status, aluno_emprestado, turma_aluno, data_emprestimo, professor_emprestimo) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (numero_chromebook, carrinho, 'Emprestado', nome_aluno, turma, datetime.now().strftime("%d/%m/%Y %H:%M"), professor)
                 )
             else:
                 if chromebook[3] == 'Emprestado':
                     return False, "Chromebook já está emprestado"
                 cursor.execute(
-                    "UPDATE chromebooks SET status = ?, aluno_emprestado = ?, data_emprestimo = ?, professor_emprestimo = ? WHERE numero = ? AND carrinho = ?",
-                    ('Emprestado', nome_aluno, datetime.now().strftime("%d/%m/%Y %H:%M"), professor, numero_chromebook, carrinho)
+                    "UPDATE chromebooks SET status = ?, aluno_emprestado = ?, turma_aluno = ?, data_emprestimo = ?, professor_emprestimo = ? WHERE numero = ? AND carrinho = ?",
+                    ('Emprestado', nome_aluno, turma, datetime.now().strftime("%d/%m/%Y %H:%M"), professor, numero_chromebook, carrinho)
                 )
             cursor.execute(
-                "INSERT INTO historico (chromebook_numero, carrinho, aluno, professor, data_emprestimo, tipo_acao) VALUES (?, ?, ?, ?, ?, ?)",
-                (numero_chromebook, carrinho, nome_aluno, professor, datetime.now().strftime("%d/%m/%Y %H:%M"), 'Empréstimo')
+                "INSERT INTO historico (chromebook_numero, carrinho, aluno, turma, professor, data_emprestimo, tipo_acao) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (numero_chromebook, carrinho, nome_aluno, turma, professor, datetime.now().strftime("%d/%m/%Y %H:%M"), 'Empréstimo')
             )
             conn.commit()
             conn.close()
-            return True, f"Chromebook {numero_chromebook} emprestado para {nome_aluno}"
+            return True, f"Chromebook {numero_chromebook} emprestado para {nome_aluno} (Turma: {turma})"
         except Exception as e:
             return False, str(e)
 
@@ -180,9 +192,9 @@ class Database:
                 return False, "Chromebook não encontrado"
             if chromebook[3] == 'Disponível':
                 return False, "Chromebook já está disponível"
-            cursor.execute("UPDATE chromebooks SET status = 'Disponível', aluno_emprestado = NULL, data_emprestimo = NULL, professor_emprestimo = NULL WHERE numero = ? AND carrinho = ?", (numero_chromebook, carrinho))
-            cursor.execute("INSERT INTO historico (chromebook_numero, carrinho, aluno, professor, data_devolucao, tipo_acao) VALUES (?, ?, ?, ?, ?, ?)",
-                           (numero_chromebook, carrinho, chromebook[4], chromebook[6], datetime.now().strftime("%d/%m/%Y %H:%M"), 'Devolução'))
+            cursor.execute("UPDATE chromebooks SET status = 'Disponível', aluno_emprestado = NULL, turma_aluno = NULL, data_emprestimo = NULL, professor_emprestimo = NULL WHERE numero = ? AND carrinho = ?", (numero_chromebook, carrinho))
+            cursor.execute("INSERT INTO historico (chromebook_numero, carrinho, aluno, turma, professor, data_devolucao, tipo_acao) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                           (numero_chromebook, carrinho, chromebook[4], chromebook[5], chromebook[6], datetime.now().strftime("%d/%m/%Y %H:%M"), 'Devolução'))
             conn.commit()
             conn.close()
             return True, f"Chromebook {numero_chromebook} devolvido"
@@ -204,24 +216,65 @@ class Database:
     def obter_todos_chromebooks(self):
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT numero, carrinho, status, aluno_emprestado, professor_emprestimo, data_emprestimo FROM chromebooks ORDER BY carrinho, numero")
-        r = cursor.fetchall(); conn.close(); return r
+        
+        # Verificar se a coluna turma_aluno existe
+        cursor.execute("PRAGMA table_info(chromebooks)")
+        colunas = [col[1] for col in cursor.fetchall()]
+        
+        if 'turma_aluno' in colunas:
+            cursor.execute("SELECT numero, carrinho, status, aluno_emprestado, turma_aluno, professor_emprestimo, data_emprestimo FROM chromebooks ORDER BY carrinho, numero")
+        else:
+            # Se a coluna não existe, usar consulta sem turma_aluno
+            cursor.execute("SELECT numero, carrinho, status, aluno_emprestado, NULL as turma_aluno, professor_emprestimo, data_emprestimo FROM chromebooks ORDER BY carrinho, numero")
+        
+        r = cursor.fetchall()
+        conn.close()
+        return r
 
     def obter_chromebooks_disponiveis(self):
-        conn = self.get_connection(); cursor = conn.cursor()
+        conn = self.get_connection()
+        cursor = conn.cursor()
         cursor.execute("SELECT numero, carrinho FROM chromebooks WHERE status = 'Disponível' ORDER BY carrinho, numero")
-        chromebooks = cursor.fetchall(); conn.close()
+        chromebooks = cursor.fetchall()
+        conn.close()
         return [{'numero': cb[0], 'carrinho': cb[1]} for cb in chromebooks]
 
     def obter_chromebooks_emprestados(self):
-        conn = self.get_connection(); cursor = conn.cursor()
-        cursor.execute("SELECT numero, carrinho, aluno_emprestado FROM chromebooks WHERE status = 'Emprestado' ORDER BY carrinho, numero")
-        chromebooks = cursor.fetchall(); conn.close()
-        return [{'numero': cb[0], 'carrinho': cb[1], 'aluno': cb[2]} for cb in chromebooks]
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Verificar se a coluna turma_aluno existe
+        cursor.execute("PRAGMA table_info(chromebooks)")
+        colunas = [col[1] for col in cursor.fetchall()]
+        
+        if 'turma_aluno' in colunas:
+            cursor.execute("SELECT numero, carrinho, aluno_emprestado, turma_aluno FROM chromebooks WHERE status = 'Emprestado' ORDER BY carrinho, numero")
+            chromebooks = cursor.fetchall()
+            return [{'numero': cb[0], 'carrinho': cb[1], 'aluno': cb[2], 'turma': cb[3]} for cb in chromebooks]
+        else:
+            cursor.execute("SELECT numero, carrinho, aluno_emprestado FROM chromebooks WHERE status = 'Emprestado' ORDER BY carrinho, numero")
+            chromebooks = cursor.fetchall()
+            return [{'numero': cb[0], 'carrinho': cb[1], 'aluno': cb[2], 'turma': 'N/A'} for cb in chromebooks]
 
     def obter_historico(self):
-        conn = self.get_connection(); cursor = conn.cursor()
-        cursor.execute('''
-            SELECT * FROM historico ORDER BY id DESC LIMIT 50
-        ''')
-        historico = cursor.fetchall(); conn.close(); return historico
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Verificar se a coluna turma existe
+        cursor.execute("PRAGMA table_info(historico)")
+        colunas = [col[1] for col in cursor.fetchall()]
+        
+        if 'turma' in colunas:
+            cursor.execute('''
+                SELECT * FROM historico ORDER BY id DESC LIMIT 50
+            ''')
+        else:
+            # Se a coluna não existe, criar uma consulta alternativa
+            cursor.execute('''
+                SELECT id, chromebook_numero, carrinho, aluno, NULL as turma, professor, data_emprestimo, data_devolucao, tipo_acao 
+                FROM historico ORDER BY id DESC LIMIT 50
+            ''')
+            
+        historico = cursor.fetchall()
+        conn.close()
+        return historico
