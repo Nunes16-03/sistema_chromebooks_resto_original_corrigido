@@ -12,7 +12,7 @@
                 </h4>
             </div>
             <div class="card-body">
-                <form method="POST" id="emprestimoForm">
+                <form method="POST" action="{{ url_for('emprestimo') }}" id="emprestimoForm">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="numero_chromebook" class="form-label">Número do Chromebook</label>
@@ -47,7 +47,7 @@
                             <label for="turma" class="form-label">Turma do Aluno</label>
                             <input type="text" class="form-control" id="turma" 
                                    name="turma" required 
-                                   placeholder="Ex: 8ºA, 9ºB, etc.">
+                                   placeholder="Ex: 1°A, 2°B, 3°C">
                             <div class="form-text">Turma do aluno para controle</div>
                         </div>
                     </div>

@@ -83,75 +83,70 @@
 
 {% block scripts %}
 <script>
-// Validação em tempo real do número e carrinho
+// 🟢 Carregar chromebooks emprestados (versão corrigida)
 document.addEventListener('DOMContentLoaded', function() {
-    const numeroInput = document.getElementById('numero_chromebook');
-    const carrinhoSelect = document.getElementById('carrinho');
-    const numeroFeedback = document.getElementById('numeroFeedback');
-    const carrinhoFeedback = document.getElementById('carrinhoFeedback');
-    const submitBtn = document.getElementById('submitBtn');
+    const container = document.getElementById('emprestados-list');
+    if (!container) return;
 
-    function validarNumeroCarrinho() {
-        const numero = parseInt(numeroInput.value);
-        const carrinho = carrinhoSelect.value;
-        
-        if (numero && carrinho) {
-            if (carrinho === 'Par' && numero % 2 !== 0) {
-                numeroFeedback.innerHTML = '<span class="text-danger">❌ Número deve ser PAR para carrinho PAR</span>';
-                carrinhoFeedback.innerHTML = '<span class="text-danger">❌ Carrinho incorreto para este número</span>';
-                submitBtn.disabled = true;
-                return false;
-            } else if (carrinho === 'Ímpar' && numero % 2 === 0) {
-                numeroFeedback.innerHTML = '<span class="text-danger">❌ Número deve ser ÍMPAR para carrinho ÍMPAR</span>';
-                carrinhoFeedback.innerHTML = '<span class="text-danger">❌ Carrinho incorreto para este número</span>';
-                submitBtn.disabled = true;
-                return false;
-            } else {
-                numeroFeedback.innerHTML = '<span class="text-success">✅ Número correto para este carrinho</span>';
-                carrinhoFeedback.innerHTML = '<span class="text-success">✅ Carrinho correto</span>';
-                submitBtn.disabled = false;
-                return true;
+    // Mostra spinner inicial
+    container.innerHTML = `
+        <div class="text-center text-muted py-3">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+            <div>Carregando chromebooks emprestados...</div>
+        </div>
+    `;
+
+    // Faz a requisição à API
+    fetch('/api/chromebooks_emprestados')
+        .then(res => {
+            if (!res.ok) throw new Error("Erro HTTP: " + res.status);
+            return res.json();
+        })
+        .then(data => {
+            // Se a API retornar erro em JSON
+            if (data.erro) {
+                container.innerHTML = `
+                    <div class="alert alert-danger text-center py-2 mb-0">
+                        ❌ Erro na API: ${data.erro}
+                    </div>
+                `;
+                return;
             }
-        } else {
-            numeroFeedback.innerHTML = '';
-            carrinhoFeedback.innerHTML = '';
-            submitBtn.disabled = false;
-            return true;
-        }
-    }
 
-    numeroInput.addEventListener('input', validarNumeroCarrinho);
-    carrinhoSelect.addEventListener('change', validarNumeroCarrinho);
-});
+            // Nenhum emprestado
+            if (!data || data.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info text-center py-2 mb-0">
+                        📭 Nenhum Chromebook emprestado no momento.
+                    </div>
+                `;
+                return;
+            }
 
-// Carregar chromebooks emprestados
-fetch('/api/chromebooks_emprestados')
-    .then(response => response.json())
-    .then(data => {
-        const container = document.getElementById('emprestados-list');
-        if (data.length === 0) {
-            container.innerHTML = '<p class="text-muted">Nenhum chromebook emprestado no momento</p>';
-            return;
-        }
-        
-        let html = '';
-        data.forEach(cb => {
-            html += `
-                <div class="mb-2 p-2 border rounded">
-                    <strong>#${cb.numero}</strong> 
-                    <span class="badge bg-${cb.carrinho === 'Par' ? 'primary' : 'secondary'}">${cb.carrinho}</span><br>
-                    <small class="text-muted">Com: ${cb.aluno}</small>
+            // Renderiza a lista
+            let html = '';
+            data.forEach(cb => {
+                html += `
+                    <div class="mb-2 p-2 border rounded shadow-sm bg-light">
+                        <strong>💻 #${cb.numero}</strong>
+                        <span class="badge bg-${cb.carrinho === 'Par' ? 'primary' : 'secondary'} ms-1">${cb.carrinho}</span><br>
+                        <small class="text-muted">👤 ${cb.aluno || 'Desconhecido'} — ${cb.turma || 'Sem turma'}</small>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            console.error("❌ Erro ao carregar chromebooks emprestados:", err);
+            container.innerHTML = `
+                <div class="alert alert-danger text-center py-2 mb-0">
+                    ❌ Falha ao carregar dados. Tente novamente.
                 </div>
             `;
         });
-        
-        container.innerHTML = html;
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        document.getElementById('emprestados-list').innerHTML = 
-            '<p class="text-danger">Erro ao carregar dados</p>';
-    });
+});
+
 </script>
 {% endblock %}
 <script src="{{ url_for('static', filename='script.js') }}"></script>

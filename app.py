@@ -244,9 +244,30 @@ def api_chromebooks_disponiveis():
 def api_chromebooks_emprestados():
     try:
         chromebooks = db.obter_chromebooks_emprestados()
-        print(f"📦 {len(chromebooks)} Chromebooks emprestados encontrados")
-        return jsonify(chromebooks)
+
+        emprestados = []
+        for cb in chromebooks:
+            # Se vier como dicionário, mantém
+            if isinstance(cb, dict):
+                emprestados.append(cb)
+            # Se vier como tupla, converte manualmente
+            elif isinstance(cb, (list, tuple)):
+                emprestados.append({
+                    "numero": cb[0] if len(cb) > 0 else None,
+                    "carrinho": cb[1] if len(cb) > 1 else "",
+                    "status": cb[2] if len(cb) > 2 else "",
+                    "aluno": cb[3] if len(cb) > 3 else "",
+                    "turma": cb[4] if len(cb) > 4 else ""
+                })
+            else:
+                print("⚠️ Registro inesperado:", cb)
+
+        print(f"📦 {len(emprestados)} Chromebooks emprestados formatados")
+        return jsonify(emprestados)
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()  # imprime o erro completo no terminal
         print(f"❌ Erro na API de chromebooks_emprestados: {e}")
         return jsonify({"erro": str(e)}), 500
 

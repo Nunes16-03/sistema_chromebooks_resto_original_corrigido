@@ -239,23 +239,16 @@ class Database:
         conn.close()
         return [{'numero': cb[0], 'carrinho': cb[1]} for cb in chromebooks]
 
-    def obter_chromebooks_emprestados(self):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        # Verificar se a coluna turma_aluno existe
-        cursor.execute("PRAGMA table_info(chromebooks)")
-        colunas = [col[1] for col in cursor.fetchall()]
-        
-        if 'turma_aluno' in colunas:
-            cursor.execute("SELECT numero, carrinho, aluno_emprestado, turma_aluno FROM chromebooks WHERE status = 'Emprestado' ORDER BY carrinho, numero")
-            chromebooks = cursor.fetchall()
-            return [{'numero': cb[0], 'carrinho': cb[1], 'aluno': cb[2], 'turma': cb[3]} for cb in chromebooks]
-        else:
-            cursor.execute("SELECT numero, carrinho, aluno_emprestado FROM chromebooks WHERE status = 'Emprestado' ORDER BY carrinho, numero")
-            chromebooks = cursor.fetchall()
-            return [{'numero': cb[0], 'carrinho': cb[1], 'aluno': cb[2], 'turma': 'N/A'} for cb in chromebooks]
-
+        con = self.conectar()
+        cur = con.cursor()
+        cur.execute("SELECT numero, carrinho, status, nome_aluno, turma FROM chromebooks WHERE status='Emprestado'")
+        rows = cur.fetchall()
+        con.close()
+        return [
+            {"numero": r[0], "carrinho": r[1], "status": r[2], "aluno": r[3], "turma": r[4]}
+            for r in rows
+        ]
+    
     def obter_historico(self):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -278,3 +271,35 @@ class Database:
         historico = cursor.fetchall()
         conn.close()
         return historico
+    
+    def obter_chromebooks_emprestados(self):
+        """Retorna todos os chromebooks emprestados no formato de dicionário JSON-friendly"""
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT numero, carrinho, status, aluno_emprestado, turma_aluno
+                FROM chromebooks
+                WHERE status = 'Emprestado'
+                ORDER BY carrinho, numero
+            """)
+            rows = cursor.fetchall()
+            conn.close()
+
+            # Converter tuplas -> dicionários
+            resultado = []
+            for r in rows:
+                resultado.append({
+                    "numero": r[0],
+                    "carrinho": r[1],
+                    "status": r[2],
+                    "aluno": r[3],
+                    "turma": r[4]
+                })
+            return resultado
+
+        except Exception as e:
+            print("❌ Erro em obter_chromebooks_emprestados:", e)
+            import traceback; traceback.print_exc()
+            return []

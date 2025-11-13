@@ -13,9 +13,9 @@ function confirmarAcao(mensagem) {
   return confirm(mensagem);
 }
 
-// 🔵 Validação de formulários
+// 🔵 Validação de formulários (IGNORA o de empréstimo e o de login)
 document.addEventListener("DOMContentLoaded", function () {
-  const forms = document.querySelectorAll("form:not(#login-form)");
+  const forms = document.querySelectorAll("form:not(#login-form):not(#emprestimoForm)");
 
   forms.forEach((form) => {
     form.addEventListener("submit", function (e) {
@@ -45,6 +45,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   buttons.forEach((button) => {
     button.addEventListener("click", function () {
+      const form = button.closest("form");
+
+      // Evita travar o botão do formulário de empréstimo (ele já tem seu próprio loading)
+      if (form && form.id === "emprestimoForm") return;
+
       const originalText = button.innerHTML;
       button.innerHTML =
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
