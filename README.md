@@ -1,22 +1,19 @@
+# Sistema de Gerenciamento de Chromebooks
 
-# Sistema Chromebook (versão corrigida)
-- Senhas agora são armazenadas de forma segura (criptografadas com hash).
-- A chave secreta (`app.secret_key`) é lida de uma variável de ambiente.
-- O modo debug só liga se `FLASK_DEBUG=1` for definido.
-- Incluídos `requirements.txt` e `migrate_passwords.py` para facilitar manutenção.
+Projeto desenvolvido em Python com o objetivo de organizar e gerenciar informações sobre Chromebooks utilizados em ambiente educacional.
 
-## Como usar
-1. Instale as dependências:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. Execute a migração de senhas (gera backup automático):
-   ```bash
-   python migrate_passwords.py
-   ```
-3. Rode o sistema:
-   ```bash
-   export FLASK_SECRET_KEY="chave_segura_123"
-   export FLASK_DEBUG=1
-   python app.py
-   ```
+## 🛠️ Tecnologias utilizadas
+- Python
+- Lógica de Programação
+
+## 📌 Funcionalidades
+- Cadastro de Chromebooks
+- Organização de informações
+- Simulação de controle e gerenciamento de dispositivos
+
+## 🎯 Objetivo do projeto
+Projeto criado para fins de estudo e prática de programação, lógica e organização de dados durante minha formação em Ciência de Dados.
+
+## 🚀 Autor
+Vini Nunes  
+Estudante de Ensino Técnico em Ciência de Dados
